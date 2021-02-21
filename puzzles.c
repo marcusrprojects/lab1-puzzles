@@ -1,7 +1,7 @@
 /* 
  * Lab 1 - A Bit Puzzling 
  * 
- * <PLEASE PUT YOUR NAME HERE>
+ *Marcus Ribeiro
  * 
  * puzzles.c - Source file with your puzzle solutions.
  *
@@ -16,9 +16,14 @@
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 4
  *   Rating: 1
+ * 
+ * In order to get the biggest number, represented by bit containing a 0 followed by 31 1's, flip the reverse value. Therefore, this involves producing a number that starts with 
+ * a 1 and continues with 0's using left shift. Then, this binary value should be flipped to get the desired number.
+ *
  */
 int maxVal(void) {
-  return 2;
+int x = 1<<31;  
+return ~x;
 }
 
 /* 
@@ -27,9 +32,13 @@ int maxVal(void) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 6
  *   Rating: 1
+ * 
+ * To see if a number is negative, its first digit must be equal to 1. Therefore, we isolate the first digit by flipping it and then determine whether it receives a 0 or 1 based on
+ * this flipped value. This utilizes the idea that  negative numbers normally do not operate properly with shifts.
  */
 int negCheck(int x) {
-  return 2;
+int y = x>>31;  
+return !(~(y));
 }
 
 /* 
@@ -38,9 +47,14 @@ int negCheck(int x) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 5
  *   Rating: 1
+ * 
+ * To set all bits to either 1 or 0 based on the LSB, the LSB should be isolated by moving it to the first position and determining whether it is a 1 or 0. Given this distinction,
+ * true or false distinctions help generate a number that when negated, is either all 1's or 0's, as desired.
  */
 int lsbCopy(int x) {
-  return 2;
+int y = x<<31;
+y = !!y;
+return ~y+1;
 }
 
 /* 
@@ -49,9 +63,13 @@ int lsbCopy(int x) {
  *   Legal ops: ~ |
  *   Max ops: 8
  *   Rating: 1
+ * 
+ * To find out what is shared, you use and. To find out what is not shared, examine what both bits do not have and see which places they do not share 1's. Then, negate this to find
+ * out which values are shared.
  */
 int andBits(int x, int y) {
-  return 2;
+  
+return ~(~x|~y);
 }
 
 /* 
@@ -60,9 +78,12 @@ int andBits(int x, int y) {
  *   Legal ops: ~ &
  *   Max ops: 14
  *   Rating: 1
+ * 
+ * To do an exclusive or, we must first compare the flipped version of one variable to the normal version of the other, figuring out which digits follow the rule, and vice versa.
+ * Then, we flip these digits and & them to find the digits that do not follow the rule. This allows us to find the digits that follow the rule by flipping this number.
  */
 int xorBits(int x, int y) {
-  return 2;
+  return ~((~(~x&y))&(~(x&~y)));
 }
 
 /* 
