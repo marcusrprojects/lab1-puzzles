@@ -22,6 +22,7 @@
  *
  */
 int maxVal(void) {
+
 int x = 1<<31;  
 return ~x;
 }
@@ -37,7 +38,8 @@ return ~x;
  * this flipped value. This utilizes the idea that  negative numbers normally do not operate properly with shifts.
  */
 int negCheck(int x) {
-int y = x>>31;  
+
+int y = x>>31; 
 return !(~(y));
 }
 
@@ -52,6 +54,7 @@ return !(~(y));
  * true or false distinctions help generate a number that when negated, is either all 1's or 0's, as desired.
  */
 int lsbCopy(int x) {
+
 int y = x<<31;
 y = !!y;
 return ~y+1;
@@ -68,7 +71,7 @@ return ~y+1;
  * out which values are shared.
  */
 int andBits(int x, int y) {
-  
+
 return ~(~x|~y);
 }
 
@@ -86,14 +89,21 @@ int xorBits(int x, int y) {
   return ~((~(~x&y))&(~(x&~y)));
 }
 
-/* 
+/*
  * setThirdBits - return value with every third bit (starting with the LSB) set to 1
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 8
  *   Rating: 2
+ *
+ * To set the third bits using only these operators and no loops, one must initially choose a number that's first few bits follow the pattern. This then must be shifted as new
+ * bits are added to complete the trend until the number is fully composed. This number would be 00100100...1001.
  */
 int setThirdBits(void) {
-  return 2;
+
+int x = 0x249;
+x = x | (x<<9);
+x = x | (x<<15);
+return x;
 }
 
 /* 
@@ -103,9 +113,13 @@ int setThirdBits(void) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 6
  *   Rating: 2
+ * 
+ * To do this, use masking and shift the mask based on which areas of code should be illuminated. In this case, it is split into 4 even parts.
+ * 
  */
 int byteExtract(int x, int n) {
-  return 2;
+
+return (x >> (8*n)) & 0xFF;
 }
 
 /* 
@@ -116,9 +130,15 @@ int byteExtract(int x, int n) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 15
  *   Rating: 2
+ *
+ * Given that we are dealing with 32-bit numbers, to retain the bits followed by 0, the amount of distance necessary to shift out all of the extra bits in one direction would be
+ * be 32 - n. To negate a number, one must follow the rule for 2's complement, which involves flipping it and adding one. After shifting in this direction, one can recieve an n-bit
+ * number by shifting the same number of spaces in the other direction. In theory, if x was an n-bit number, this generated value would equal x. An exclusive or would consequently
+ * result in 0, since the values would not be exclusive. The logical not then would turn this 0 into a value of 1 to show that these values can be represented with n bits.
  */
 int bitFit(int x, int n) {
-  return 2;
+int shiftDistance = 32 + (~n + 1);
+  return !(((x << shiftDistance) >> shiftDistance) ^ x);
 }
 
 /* 
@@ -129,9 +149,30 @@ int bitFit(int x, int n) {
  *  Legal ops: ! ~ & ^ | + << >>
  *  Max ops: 25
  *  Rating: 2
+ *
+ * To swap bytes, first save each byte separately. Next, shift each isolated byte to its new location. Finally, replace former bits in bytes that will be swapped with 0 and add in
+ * the necessary one bits to represent the new byte locations.
  */
 int byteSwitch(int x, int n, int m) {
-    return 2;
+
+//isolate n
+int nAlone = (x >> (8 * n)) & 0xFF;
+//isolate m
+int mAlone = (x >> (8 * m)) & 0xFF;
+
+//properly shifted nAlone values. Moves n to m's place and vice versa.
+nAlone = nAlone << (m * 8); //nAlone shifts to n's new spot
+mAlone = mAlone << (n * 8); //mAlone shifts to m's new spot
+
+//places all 1's where n/m were before
+int nOnes = 0xFF << (8 * m); //nOnes shifts 1's to n's new spot
+int mOnes = 0xFF << (8 * n); //mOnes shifts 1's to m's new spot
+
+//Zero's out places so that they can be replaced with a new byte
+x = (x & ~nOnes) | nAlone; //flip nAlone
+x = (x & ~mOnes) | mAlone; //flip mAlone
+
+return x;
 }
 
 /* 
@@ -143,6 +184,13 @@ int byteSwitch(int x, int n, int m) {
  *   Rating: 3
  */
 int addOverflow(int x, int y) {
+
+//if both negative, the result must be negative or else it is wrong. Check sign digit. FALSE!
+
+//if both positive, the result must be positive or else it is wrong. Check sign digit. FALSE!
+
+//Otherwise, true
+
   return 2;
 }
 
