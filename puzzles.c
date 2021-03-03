@@ -182,16 +182,20 @@ return x;
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 20
  *   Rating: 3
+ *
+ * First, we determine the sign of each integer. If each integer has different signs, then our addition must work, since it cannot possibly overflow. Next, to cover the case in which
+ * both numbers have the same sign but still do not overflow, we also determine what the sign would be when added. If the sign bit would be the same as the sign of one of the numbers,
+ * then this problem will also not overflow. For the ones that do not overflow, we product a value 1 of 1 using not operators and for the ones that do overflow, we produce a value of
+ * 0.
  */
 int addOverflow(int x, int y) {
 
-//if both negative, the result must be negative or else it is wrong. Check sign digit. FALSE!
+int xSign = (x>>31);
+int ySign = (y>>31);
 
-//if both positive, the result must be positive or else it is wrong. Check sign digit. FALSE!
+int addedSign = (x+y)>>31; //sign digit after adding them.
 
-//Otherwise, true
-
-  return 2;
+return (!(!(xSign ^ ySign))) | (!(addedSign ^ xSign));
 }
 
 /* 
@@ -201,9 +205,17 @@ int addOverflow(int x, int y) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 20
  *   Rating: 3
+ *
+ * To avoid doing an arithmetic shift, we need to set the MSB to 0. We do this by shifting the int to the right by 31 digits and masking out extraneous values to distill its sign
+ * bit. Then, we shift the number, in which case it now must use zero fill. Finally, if the integer initially started with a 1, we replace the 0 that we initially set it to by 1.
  */
 int shiftLogical(int x, int n) {
-  return 2;
+
+int signDigit = ((x >> 31) & (1)); //save the sign digit value
+x = x & (~(1<<31)); //put a 0 for the sign digit for now
+x = x >> n; //shift right by n spaces
+x = x | (signDigit << (31-n));
+ return x;
 }
 
 /* 
@@ -212,9 +224,15 @@ int shiftLogical(int x, int n) {
  *   Legal ops: ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 3
+ *
+ * First, we utilize a special property of 0 in which negating it results in 0, but negating anything else results in a nonzero number that would then be orred with x. Then, we shift 
+ * the sign digit downwards, either resulting in all 1's or 0's, due to the arithmetic righting shifting protocol. We add 1 to this since all 0's + 1 = 1 (for x = 0) and all 1's + 1
+ * = 0 (for x=/=0).
  */
 int not(int x) {
-  return 2;
+x = (~x + 1) | x; //make x negative to cancel out values.
+x = x >> 31; //will be all 1's if it is negative. Will be all 0's if originally 0.
+return x + 1;
 }
 
 /* 
@@ -225,9 +243,17 @@ int not(int x) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 15
  *   Rating: 3
+ *
+ * To convert to sign-magnitude, we must first shift the first bit entirely downwards to either get all 1's or all 0's. Then we xor this with the initial argument value to find out
+ * the absolute value of the data as positive numbers will not change, but negative numbers will flip. Finally, we or this with the initial signbit and add in an extra sign bit
+ * to make up for the case when the negative value was flipped but we did not add one to it to complete its negation.
  */
 int signMagnitude(int x) {
-  return 2;
+
+int y = x>>31; //arithmetic right shift: if positive, it adds 0 and if negative, it adds 11111...
+int signBit = y & 1; //mask out only the sign bit
+x = y ^ x; //gets absolute value
+return ((x | (signBit << 31)) + (signBit));
 }
 
 /* 
@@ -240,9 +266,22 @@ int signMagnitude(int x) {
  *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
  *   Max ops: 10
  *   Rating: 2
+ *
+ * This function first converts its assigned value into one with a sign digit of 0. It does this so that it can then see if the value needs to be changed to get its absolute value.
+ * The function's argument value will need to be changed if the exponent digits are all 1's and the decimal is nonzero (NaN case). Otherwise, the value would stay the same.
  */
 unsigned fp_abs(unsigned uf) {
-  return 2;
+
+unsigned comparisonUf = (uf & (~(1<<31)));//make first digit = 0
+
+if (comparisonUf > 0x7f800000) { //nonzero fractions along with 0 sign bit and all 1's for exp activate this condition.
+	return uf;
+}
+
+else {
+return comparisonUf;
+}
+
 }
 
 /* 
@@ -251,12 +290,30 @@ unsigned fp_abs(unsigned uf) {
  *   Both the argument and result are passed as unsigned int's, but
  *   they are to be interpreted as the bit-level representation of
  *   single-precision floating point values.
- *   When argument is NaN, return argument
- *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
+ *  When argument is NaN, return argument
+ *  Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
  *   Max ops: 30
  *   Rating: 3
+ *
+ * For this problem, one has to consider the many scenarios that can complicate things. For one, we will not change the value if all of the exponent values are all 1's or all of the
+ * 32 bits are 0's. Additionally, for values that are only fractional, we can left shift them by one and maintain their signage. Lastly, for all other values, to double them, one must
+ * add 1 to their first exponent bit.
  */
 unsigned fp_twice(unsigned uf) {
-  return 2;
+
+unsigned signDigit = uf & (1 << 31);
+
+if ((((uf>>23) & 0xff) == 0xff) || (uf == 0) || (uf == (1<<31))) { //takes care of cases where exp is all 1's or the whole number is just 0.
 }
 
+else if (((uf>>23) & 0xff) == 0) { //some fractional value exists
+uf = (uf << 1); //left shift by 1 to multiply by 2
+uf = signDigit | uf; //keeps sign digit intact
+}
+
+else {
+uf = uf + 0x800000;
+}
+
+return uf;
+}
