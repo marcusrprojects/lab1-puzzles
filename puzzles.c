@@ -100,7 +100,7 @@ int xorBits(int x, int y) {
  */
 int setThirdBits(void) {
 
-int x = 0x249;
+int x = 255 + 255 + 75;
 x = x | (x<<9);
 x = x | (x<<15);
 return x;
@@ -119,7 +119,7 @@ return x;
  */
 int byteExtract(int x, int n) {
 
-return (x >> (8*n)) & 0xFF;
+return (x >> (n*8)) & 0xFF;
 }
 
 /* 
@@ -214,7 +214,7 @@ int shiftLogical(int x, int n) {
 int signDigit = ((x >> 31) & (1)); //save the sign digit value
 x = x & (~(1<<31)); //put a 0 for the sign digit for now
 x = x >> n; //shift right by n spaces
-x = x | (signDigit << (31-n));
+x = x | (signDigit << (31 + ~n + 1));
  return x;
 }
 
