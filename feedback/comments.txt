@@ -1,0 +1,13 @@
+driver.pl output (** after fixing, see below **):
+
+	Score = 52/60 [26/30 Corr + 26/30 Perf] (87 total operators)
+
+Comments:
+
+-Your submitted puzzles.c file does not compile due to not following some blc rules (which you can see either by running the driver or by running blc directly).  I had to comment out byteExtract and byteSwitch to run your code.
+
+-Both these puzzle solutions also use multiplication (*), which is a prohibited operation.  Use shifting instead (multiply by a power of 2).
+
+-Your solutions are almost completely unindented, which makes them much harder to read.  Be 100% strict with program indentation (even with short programs like this).
+
+Score: 85/100
